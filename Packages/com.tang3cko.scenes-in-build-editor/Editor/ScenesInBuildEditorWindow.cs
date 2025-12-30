@@ -115,9 +115,11 @@ namespace ScenesInBuildEditor
         {
             var toolbar = new VisualElement();
             toolbar.style.flexDirection = FlexDirection.Row;
-            toolbar.style.height = 22;
+            toolbar.style.height = 32;
             toolbar.style.paddingLeft = 4;
             toolbar.style.paddingRight = 4;
+            toolbar.style.paddingTop = 4;
+            toolbar.style.paddingBottom = 4;
             toolbar.style.backgroundColor = new Color(0.22f, 0.22f, 0.22f);
             toolbar.style.borderBottomWidth = 1;
             toolbar.style.borderBottomColor = new Color(0.1f, 0.1f, 0.1f);
@@ -126,11 +128,16 @@ namespace ScenesInBuildEditor
             refreshButton.style.width = 60;
             toolbar.Add(refreshButton);
 
+            var clearMissingButton = new Button(ClearMissingScenes) { text = "Clear Missing" };
+            clearMissingButton.style.width = 90;
+            toolbar.Add(clearMissingButton);
+
             var spacer = new VisualElement();
             spacer.style.flexGrow = 1;
             toolbar.Add(spacer);
 
             searchField = new TextField();
+            searchField.textEdition.placeholder = "Search ...";
             searchField.style.width = 200;
             searchField.RegisterValueChangedCallback(_ => RebuildList());
             toolbar.Add(searchField);
@@ -254,6 +261,15 @@ namespace ScenesInBuildEditor
                 .ToArray();
 
             EditorBuildSettings.scenes = newScenes;
+        }
+
+        private void ClearMissingScenes()
+        {
+            var validScenes = EditorBuildSettings.scenes
+                .Where(s => !string.IsNullOrEmpty(s.path) && System.IO.File.Exists(s.path))
+                .ToArray();
+            EditorBuildSettings.scenes = validScenes;
+            RefreshAndRebuildList();
         }
 
         // Private Methods - Scene Operations

@@ -1,5 +1,6 @@
 using System.Linq;
 using UnityEditor;
+using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -31,6 +32,7 @@ namespace ScenesInBuildEditor
             CreatePathLabel(scene);
             SetupDragEvents(scene);
             SetupHoverEffects();
+            SetupContextMenu();
         }
 
         // Private Methods - Setup
@@ -98,7 +100,14 @@ namespace ScenesInBuildEditor
             container.style.justifyContent = Justify.Center;
             container.style.overflow = Overflow.Hidden;
 
-            var nameLabel = new Label(scene.Name + ".unity");
+            var activeScenePath = EditorSceneManager.GetActiveScene().path;
+            var nameText = scene.Name + ".unity";
+            if (scene.Path == activeScenePath)
+            {
+                nameText += " (Current)";
+            }
+
+            var nameLabel = new Label(nameText);
             nameLabel.style.overflow = Overflow.Hidden;
             nameLabel.style.textOverflow = TextOverflow.Ellipsis;
             container.Add(nameLabel);
@@ -137,6 +146,21 @@ namespace ScenesInBuildEditor
             {
                 style.backgroundColor = Color.clear;
             });
+        }
+
+        private void SetupContextMenu()
+        {
+            this.AddManipulator(new ContextualMenuManipulator(evt =>
+            {
+                evt.menu.AppendAction("Open", _ =>
+                {
+                    EditorSceneManager.OpenScene(Scene.Path, OpenSceneMode.Single);
+                });
+                evt.menu.AppendAction("Open Additive", _ =>
+                {
+                    EditorSceneManager.OpenScene(Scene.Path, OpenSceneMode.Additive);
+                });
+            }));
         }
 
         // Event Handlers
