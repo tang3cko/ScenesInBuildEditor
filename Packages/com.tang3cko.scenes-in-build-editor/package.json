@@ -1,0 +1,23 @@
+{
+  "name": "com.tang3cko.scenes-in-build-editor",
+  "version": "0.1.0",
+  "displayName": "Scenes In Build Editor",
+  "description": "Simple editor window to manage Build Settings scene list with checkboxes and drag-and-drop reordering.",
+  "unity": "2021.3",
+  "author": {
+    "name": "tang3cko",
+    "url": "https://github.com/tang3cko"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tang3cko/ScenesInBuildEditor.git"
+  },
+  "keywords": [
+    "editor",
+    "scene",
+    "build-settings",
+    "scenes-in-build",
+    "utility"
+  ],
+  "license": "MIT"
+}
