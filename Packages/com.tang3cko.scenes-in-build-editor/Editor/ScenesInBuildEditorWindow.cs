@@ -184,7 +184,7 @@ namespace ScenesInBuildEditor
         private void RefreshSceneList()
         {
             var buildScenes = EditorBuildSettings.scenes;
-            var buildPaths = buildScenes.Select(s => s.path).ToList();
+            var buildPaths = new HashSet<string>(buildScenes.Select(s => s.path));
             var allSceneGuids = AssetDatabase.FindAssets("t:Scene");
 
             allScenes.Clear();
@@ -263,12 +263,10 @@ namespace ScenesInBuildEditor
 
             if (fromIndex < 0 || fromIndex >= buildScenes.Count) return;
             if (toIndex < 0) toIndex = 0;
-            if (toIndex > buildScenes.Count) toIndex = buildScenes.Count;
+            if (toIndex > buildScenes.Count - 1) toIndex = buildScenes.Count - 1;
 
             var scene = buildScenes[fromIndex];
             buildScenes.RemoveAt(fromIndex);
-
-            if (toIndex > fromIndex) toIndex--;
             buildScenes.Insert(toIndex, scene);
 
             for (int i = 0; i < buildScenes.Count; i++)
@@ -293,11 +291,16 @@ namespace ScenesInBuildEditor
             {
                 if (child is SceneItem sceneItem && sceneItem.Scene.IsInBuild)
                 {
-                    var rect = child.worldBound;
-                    var localRect = sceneContainer.WorldToLocal(rect.position);
-                    float midY = localRect.y + rect.height / 2;
+                    // Skip the currently dragged item
+                    if (sceneItem == draggedItem)
+                    {
+                        continue;
+                    }
 
-                    if (y < midY)
+                    var rect = child.worldBound;
+                    var localY = sceneContainer.WorldToLocal(rect.position).y;
+
+                    if (y < localY + rect.height / 2)
                     {
                         return index;
                     }
@@ -305,7 +308,7 @@ namespace ScenesInBuildEditor
                 }
             }
 
-            return buildCount;
+            return index;
         }
 
         private void ShowDropIndicator(int index)
@@ -317,29 +320,33 @@ namespace ScenesInBuildEditor
             }
 
             int currentIndex = 0;
+            SceneItem lastValidItem = null;
+
             foreach (var child in sceneContainer.Children())
             {
                 if (child is SceneItem sceneItem && sceneItem.Scene.IsInBuild)
                 {
+                    if (sceneItem == draggedItem)
+                    {
+                        continue;
+                    }
+
                     if (currentIndex == index)
                     {
                         var rect = child.worldBound;
-                        dropIndicator.style.top = sceneContainer.WorldToLocal(rect.position).y;
+                        dropIndicator.style.top = rootVisualElement.WorldToLocal(rect.position).y;
                         dropIndicator.style.display = DisplayStyle.Flex;
                         return;
                     }
+                    lastValidItem = sceneItem;
                     currentIndex++;
                 }
             }
 
-            var lastBuildItem = sceneContainer.Children()
-                .OfType<SceneItem>()
-                .LastOrDefault(s => s.Scene.IsInBuild);
-
-            if (lastBuildItem != null)
+            if (lastValidItem != null)
             {
-                var rect = lastBuildItem.worldBound;
-                dropIndicator.style.top = sceneContainer.WorldToLocal(rect.position).y + rect.height;
+                var rect = lastValidItem.worldBound;
+                dropIndicator.style.top = rootVisualElement.WorldToLocal(rect.position).y + rect.height;
                 dropIndicator.style.display = DisplayStyle.Flex;
             }
         }

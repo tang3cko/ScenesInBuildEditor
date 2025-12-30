@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] - 2025-01-01
+
+### Added
+
+- Double-click to reveal scene in Project window
+
+### Fixed
+
+- Drag-and-drop now correctly places items at the indicated position
+
+### Changed
+
+- Two-line layout: filename on first line, directory path on second line
+- Improved search performance with HashSet
+
 ## [0.1.0] - 2025-01-01
 
 ### Added

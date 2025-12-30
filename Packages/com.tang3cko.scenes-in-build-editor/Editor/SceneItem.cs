@@ -1,4 +1,5 @@
 using System.Linq;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -36,7 +37,7 @@ namespace ScenesInBuildEditor
         private void SetupLayout()
         {
             style.flexDirection = FlexDirection.Row;
-            style.height = 22;
+            style.height = 36;
             style.paddingLeft = 4;
             style.paddingRight = 4;
             style.alignItems = Align.Center;
@@ -91,15 +92,32 @@ namespace ScenesInBuildEditor
 
         private void CreatePathLabel(SceneEntry scene)
         {
-            var pathLabel = new Label(scene.Path);
-            pathLabel.style.flexGrow = 1;
+            var container = new VisualElement();
+            container.style.flexGrow = 1;
+            container.style.flexDirection = FlexDirection.Column;
+            container.style.justifyContent = Justify.Center;
+            container.style.overflow = Overflow.Hidden;
+
+            var nameLabel = new Label(scene.Name + ".unity");
+            nameLabel.style.overflow = Overflow.Hidden;
+            nameLabel.style.textOverflow = TextOverflow.Ellipsis;
+            container.Add(nameLabel);
+
+            var directory = System.IO.Path.GetDirectoryName(scene.Path);
+            var pathLabel = new Label(directory);
+            pathLabel.style.fontSize = 10;
+            pathLabel.style.color = new Color(0.5f, 0.5f, 0.5f);
             pathLabel.style.overflow = Overflow.Hidden;
             pathLabel.style.textOverflow = TextOverflow.Ellipsis;
-            Add(pathLabel);
+            container.Add(pathLabel);
+
+            Add(container);
         }
 
         private void SetupDragEvents(SceneEntry scene)
         {
+            RegisterCallback<ClickEvent>(HandleClick);
+
             if (scene.IsInBuild)
             {
                 RegisterCallback<PointerDownEvent>(HandlePointerDown);
@@ -166,6 +184,20 @@ namespace ScenesInBuildEditor
 
             isDragging = false;
             this.ReleasePointer(evt.pointerId);
+        }
+
+        private void HandleClick(ClickEvent evt)
+        {
+            if (evt.clickCount == 2)
+            {
+                var sceneAsset = AssetDatabase.LoadAssetAtPath<SceneAsset>(Scene.Path);
+                if (sceneAsset != null)
+                {
+                    Selection.SetActiveObjectWithContext(sceneAsset, null);
+                    EditorUtility.FocusProjectWindow();
+                    EditorGUIUtility.PingObject(sceneAsset);
+                }
+            }
         }
 
         private void HandlePointerCaptureOut(PointerCaptureOutEvent evt)

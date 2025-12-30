@@ -1,6 +1,6 @@
 {
   "name": "com.tang3cko.scenes-in-build-editor",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "displayName": "Scenes In Build Editor",
   "description": "Simple editor window to manage Build Settings scene list with checkboxes and drag-and-drop reordering.",
   "unity": "2021.3",
