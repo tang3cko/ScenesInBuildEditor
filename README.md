@@ -12,6 +12,10 @@ Unity editor extension for managing the "Scenes In Build" list in Build Settings
 - Add or remove scenes from Build Settings with checkboxes
 - Reorder build scenes with drag-and-drop
 - Search filter for finding scenes
+- Right-click context menu (Open / Open Additive)
+- Double-click to reveal scene in Project window
+- Clear Missing button to remove invalid scene references
+- Current scene indicator
 
 ---
 
@@ -45,11 +49,17 @@ Add the following to `Packages/manifest.json`:
 
 Open the window from `Window > Scenes In Build Editor`.
 
-| Element | Description |
-|---------|-------------|
-| Handle | Drag to reorder build scenes |
+| Action | Description |
+|--------|-------------|
+| Drag handle | Reorder build scenes |
 | Checkbox | Add or remove from Build Settings |
-| Path | Scene file path |
+| Double-click | Reveal scene in Project window |
+| Right-click | Open scene menu (Open / Open Additive) |
+
+| Button | Description |
+|--------|-------------|
+| Refresh | Reload scene list |
+| Clear Missing | Remove invalid scene references from build |
 
 Changes apply immediately to Build Settings.
 
