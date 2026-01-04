@@ -137,8 +137,27 @@ namespace ScenesInBuildEditor
             toolbar.Add(spacer);
 
             searchField = new TextField();
-            searchField.textEdition.placeholder = "Search ...";
             searchField.style.width = 200;
+#if UNITY_2023_1_OR_NEWER
+            searchField.textEdition.placeholder = "Search ...";
+#else
+            // Fallback for Unity 2022.3 and earlier: use label as placeholder hint
+            searchField.label = "";
+            var textInput = searchField.Q<VisualElement>("unity-text-input");
+            var placeholderLabel = new Label("Search ...");
+            placeholderLabel.style.position = Position.Absolute;
+            placeholderLabel.style.left = 4;
+            placeholderLabel.style.top = 0;
+            placeholderLabel.style.bottom = 0;
+            placeholderLabel.style.unityTextAlign = TextAnchor.MiddleLeft;
+            placeholderLabel.style.color = new Color(0.5f, 0.5f, 0.5f);
+            placeholderLabel.pickingMode = PickingMode.Ignore;
+            textInput?.Add(placeholderLabel);
+            searchField.RegisterValueChangedCallback(evt =>
+            {
+                placeholderLabel.style.display = string.IsNullOrEmpty(evt.newValue) ? DisplayStyle.Flex : DisplayStyle.None;
+            });
+#endif
             searchField.RegisterValueChangedCallback(_ => RebuildList());
             toolbar.Add(searchField);
 
