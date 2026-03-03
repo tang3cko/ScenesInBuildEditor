@@ -20,17 +20,17 @@ namespace ScenesInBuildEditor
         public SceneEntry Scene { get; }
 
         // Constructor
-        public SceneItem(SceneEntry scene, ScenesInBuildEditorWindow window)
+        public SceneItem(SceneEntry scene, ScenesInBuildEditorWindow window, bool isGroupedMode = false)
         {
             Scene = scene;
             this.window = window;
 
             SetupLayout();
-            CreateDragHandle(scene.IsInBuild);
+            CreateDragHandle(scene.IsInBuild && !isGroupedMode);
             CreateIndexLabel(scene);
             CreateToggle(scene);
-            CreatePathLabel(scene);
-            SetupDragEvents(scene);
+            CreatePathLabel(scene, isGroupedMode);
+            SetupDragEvents(scene, isGroupedMode);
             SetupHoverEffects();
             SetupContextMenu();
         }
@@ -92,7 +92,7 @@ namespace ScenesInBuildEditor
             Add(toggle);
         }
 
-        private void CreatePathLabel(SceneEntry scene)
+        private void CreatePathLabel(SceneEntry scene, bool isGroupedMode = false)
         {
             var container = new VisualElement();
             container.style.flexGrow = 1;
@@ -112,22 +112,25 @@ namespace ScenesInBuildEditor
             nameLabel.style.textOverflow = TextOverflow.Ellipsis;
             container.Add(nameLabel);
 
-            var directory = System.IO.Path.GetDirectoryName(scene.Path);
-            var pathLabel = new Label(directory);
-            pathLabel.style.fontSize = 10;
-            pathLabel.style.color = new Color(0.5f, 0.5f, 0.5f);
-            pathLabel.style.overflow = Overflow.Hidden;
-            pathLabel.style.textOverflow = TextOverflow.Ellipsis;
-            container.Add(pathLabel);
+            if (!isGroupedMode)
+            {
+                var directory = System.IO.Path.GetDirectoryName(scene.Path);
+                var pathLabel = new Label(directory);
+                pathLabel.style.fontSize = 10;
+                pathLabel.style.color = new Color(0.5f, 0.5f, 0.5f);
+                pathLabel.style.overflow = Overflow.Hidden;
+                pathLabel.style.textOverflow = TextOverflow.Ellipsis;
+                container.Add(pathLabel);
+            }
 
             Add(container);
         }
 
-        private void SetupDragEvents(SceneEntry scene)
+        private void SetupDragEvents(SceneEntry scene, bool isGroupedMode = false)
         {
             RegisterCallback<ClickEvent>(HandleClick);
 
-            if (scene.IsInBuild)
+            if (scene.IsInBuild && !isGroupedMode)
             {
                 RegisterCallback<PointerDownEvent>(HandlePointerDown);
                 RegisterCallback<PointerMoveEvent>(HandlePointerMove);

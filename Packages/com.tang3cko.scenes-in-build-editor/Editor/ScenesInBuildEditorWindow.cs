@@ -11,6 +11,9 @@ namespace ScenesInBuildEditor
     /// </summary>
     public class ScenesInBuildEditorWindow : EditorWindow
     {
+        // Constants
+        private const string ViewModePrefsKey = "ScenesInBuildEditor.ViewMode";
+
         // Fields
         private List<SceneEntry> allScenes = new();
         private VisualElement sceneContainer;
@@ -19,6 +22,8 @@ namespace ScenesInBuildEditor
         private SceneItem draggedItem;
         private int dragStartIndex;
         private VisualElement dropIndicator;
+        private Button viewModeButton;
+        private bool isGroupedView;
 
         // Properties
         internal IReadOnlyList<SceneEntry> AllScenes => allScenes;
@@ -27,6 +32,8 @@ namespace ScenesInBuildEditor
         // Unity Lifecycle Methods
         private void CreateGUI()
         {
+            isGroupedView = EditorPrefs.GetString(ViewModePrefsKey, "flat") == "grouped";
+
             var root = rootVisualElement;
             root.style.flexDirection = FlexDirection.Column;
 
@@ -131,6 +138,10 @@ namespace ScenesInBuildEditor
             var clearMissingButton = new Button(ClearMissingScenes) { text = "Clear Missing" };
             clearMissingButton.style.width = 90;
             toolbar.Add(clearMissingButton);
+
+            viewModeButton = new Button(ToggleViewMode) { text = isGroupedView ? "Flat" : "Grouped" };
+            viewModeButton.style.width = 70;
+            toolbar.Add(viewModeButton);
 
             var spacer = new VisualElement();
             spacer.style.flexGrow = 1;
@@ -248,7 +259,22 @@ namespace ScenesInBuildEditor
             sceneContainer.Clear();
 
             var searchText = searchField?.value?.ToLower() ?? "";
+            var isSearching = !string.IsNullOrEmpty(searchText);
 
+            if (!isSearching && isGroupedView)
+            {
+                RebuildGroupedList();
+            }
+            else
+            {
+                RebuildFlatList(searchText);
+            }
+
+            UpdateFooter();
+        }
+
+        private void RebuildFlatList(string searchText)
+        {
             foreach (var scene in allScenes)
             {
                 if (!string.IsNullOrEmpty(searchText) &&
@@ -258,11 +284,40 @@ namespace ScenesInBuildEditor
                     continue;
                 }
 
-                var item = new SceneItem(scene, this);
+                var item = new SceneItem(scene, this, false);
                 sceneContainer.Add(item);
             }
+        }
 
-            UpdateFooter();
+        private void RebuildGroupedList()
+        {
+            var groups = allScenes
+                .GroupBy(s => System.IO.Path.GetDirectoryName(s.Path)?.Replace('\\', '/') ?? "")
+                .OrderBy(g => g.Key);
+
+            foreach (var group in groups)
+            {
+                var sortedScenes = group
+                    .OrderByDescending(s => s.IsInBuild)
+                    .ThenBy(s => s.IsInBuild ? s.BuildIndex : int.MaxValue)
+                    .ThenBy(s => s.Name);
+
+                var header = new SceneGroupHeader(group.Key, group.Count());
+                foreach (var scene in sortedScenes)
+                {
+                    var item = new SceneItem(scene, this, true);
+                    header.ChildContainer.Add(item);
+                }
+                sceneContainer.Add(header);
+            }
+        }
+
+        private void ToggleViewMode()
+        {
+            isGroupedView = !isGroupedView;
+            EditorPrefs.SetString(ViewModePrefsKey, isGroupedView ? "grouped" : "flat");
+            viewModeButton.text = isGroupedView ? "Flat" : "Grouped";
+            RebuildList();
         }
 
         private void UpdateFooter()
